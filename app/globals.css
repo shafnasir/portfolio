@@ -1,26 +1,429 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f2f0eb;
+  --paper-2: #e8e5de;
+  --ink: #121211;
+  --ink-2: #1a1a18;
+  --muted: #696761;
+  --line: rgb(18 18 17 / 0.13);
+  --signal: #00a676;
+  /* Same green, darkened for small text on paper, where #00a676 is about 2.8:1. */
+  --signal-ink: #007a56;
+  --on-ink: #f2f0eb;
+  --on-ink-muted: rgb(242 240 235 / 0.6);
+  --line-ink: rgb(242 240 235 / 0.14);
+
+  --gutter: clamp(1.25rem, 4vw, 3.5rem);
+  --header-h: 4rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  --ease-in-out: cubic-bezier(0.7, 0, 0.2, 1);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-paper: var(--paper);
+  --color-paper-2: var(--paper-2);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-ink: var(--line-ink);
+  --color-signal: var(--signal);
+  --color-signal-ink: var(--signal-ink);
+  --color-on-ink: var(--on-ink);
+  --color-on-ink-muted: var(--on-ink-muted);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  --font-serif: var(--font-instrument-serif);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+@utility shell {
+  width: 100%;
+  max-width: 96rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+html {
+  scroll-padding-top: calc(var(--header-h) + 1rem);
+  -webkit-text-size-adjust: 100%;
+  background: var(--ink);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--signal);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--signal);
+  outline-offset: 3px;
+}
+
+@layer components {
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    line-height: 1rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Fine drafting grid used on every surface; the motif's "graph paper". */
+  .grid-paper {
+    background-image:
+      linear-gradient(to right, rgb(18 18 17 / 0.055) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(18 18 17 / 0.055) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+  }
+  .grid-ink {
+    background-image:
+      linear-gradient(to right, rgb(242 240 235 / 0.045) 1px, transparent 1px),
+      linear-gradient(to bottom, rgb(242 240 235 / 0.045) 1px, transparent 1px);
+    background-size: 64px 64px;
+    background-position: -1px -1px;
+  }
+
+  .outline-type {
+    color: transparent;
+    -webkit-text-stroke-width: 1.5px;
+    -webkit-text-stroke-color: var(--p, currentColor);
+  }
+
+  .link {
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.28em;
+    text-decoration-color: color-mix(in srgb, currentColor 40%, transparent);
+    transition:
+      text-decoration-color 200ms ease,
+      color 200ms ease;
+  }
+  .link:hover {
+    text-decoration-color: currentColor;
+  }
+
+  .link-grow {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    background-size: 0% 1px;
+    transition:
+      background-size 260ms var(--ease),
+      color 200ms ease;
+  }
+  .link-grow:hover,
+  .link-grow:focus-visible,
+  .group:hover .link-grow {
+    background-size: 100% 1px;
+  }
+
+  /* Masked text: each word or character rises out of its own clipping box. */
+  .split-w {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-block: 0.08em 0.14em;
+    margin-block: -0.08em -0.14em;
+  }
+  .split-i {
+    display: inline-block;
+  }
+
+  /* Terminal-style block cursor after the name. */
+  .cursor-block {
+    display: inline-block;
+    width: 0.15em;
+    height: 0.15em;
+    margin-left: 0.05em;
+    background: var(--signal);
+    vertical-align: baseline;
+  }
+
+  .fig-label {
+    font-size: 11px;
+  }
+  @media (max-width: 639px) {
+    .fig-label {
+      font-size: 13.5px;
+    }
+  }
+
+  .map-label {
+    font-size: 11px;
+  }
+  @media (max-width: 1023px) {
+    .map-label {
+      font-size: 17px;
+    }
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+}
+@keyframes split-rise {
+  from {
+    transform: translateY(115%);
+  }
+}
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+.scroll-progress {
+  transform: scaleX(0);
+}
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+}
+@keyframes menu-in {
+  from {
+    transform: translateY(105%);
+  }
+}
+
+/* --- Project figures ------------------------------------------------------------------ */
+
+.fig * {
+  transform-box: fill-box;
+}
+.fig:not([data-active="true"]) * {
+  animation-play-state: paused !important;
+}
+
+@keyframes d-scan {
+  0% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  70% {
+    transform: translateY(248px);
+    opacity: 1;
+  }
+  78%,
+  100% {
+    transform: translateY(248px);
+    opacity: 0;
+  }
+}
+@keyframes d-mark {
+  0%,
+  10% {
+    transform: scaleX(0);
+  }
+  22%,
+  88% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+@keyframes d-appear {
+  0%,
+  18% {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  30%,
+  88% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes d-dash {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+@keyframes d-block {
+  0% {
+    opacity: 0;
+    transform: translate(var(--fx), var(--fy));
+  }
+  14%,
+  84% {
+    opacity: 1;
+    transform: none;
+  }
+  100% {
+    opacity: 0;
+    transform: none;
+  }
+}
+@keyframes d-type {
+  0%,
+  10% {
+    transform: scaleX(0);
+  }
+  40%,
+  90% {
+    transform: scaleX(1);
+  }
+  100% {
+    transform: scaleX(1);
+    opacity: 0;
+  }
+}
+@keyframes d-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.d-scan {
+  animation: d-scan 4.8s var(--ease-in-out) infinite;
+}
+.d-mark {
+  transform-origin: left center;
+  animation: d-mark 4.8s var(--ease) infinite;
+}
+.d-appear {
+  animation: d-appear 4.8s var(--ease) infinite;
+}
+.d-dash {
+  stroke-dasharray: 4 8;
+  animation: d-dash 1.2s linear infinite;
+}
+.d-block {
+  animation: d-block 7s var(--ease) infinite;
+}
+.d-type {
+  transform-origin: left center;
+  animation: d-type 7s steps(14) infinite;
+}
+.d-pulse {
+  animation: d-pulse 2.4s ease-in-out infinite;
+}
+.d-blink {
+  animation: blink 1s steps(1) infinite;
+}
+
+/* --- Motion that only runs when the visitor hasn't asked for less ---------------------- */
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  .load-rise {
+    animation: rise 900ms var(--ease) both;
+    animation-delay: var(--d, 0s);
+  }
+  .split-load .split-i {
+    animation: split-rise 1100ms var(--ease) both;
+    animation-delay: var(--d, 0s);
+  }
+  .cursor-block {
+    animation:
+      fade 300ms 900ms both,
+      blink 1s steps(1) 1.2s 4;
+  }
+
+  .map-edge {
+    stroke-dasharray: 1;
+    animation: draw 1400ms var(--ease) both;
+    animation-delay: var(--d, 0s);
+  }
+  .map-node {
+    animation: fade 600ms ease both;
+    animation-delay: var(--d, 0s);
+  }
+
+  /* Reveal.tsx only ever marks content that starts below the fold as pending. */
+  [data-reveal-state="pending"]:not(.reveal-mask) {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  [data-reveal-state="shown"]:not(.reveal-mask) {
+    transition:
+      opacity 900ms var(--ease),
+      transform 900ms var(--ease);
+  }
+  [data-reveal-state="pending"] .split-i {
+    transform: translateY(115%);
+  }
+  [data-reveal-state="shown"] .split-i {
+    transition: transform 1000ms var(--ease) var(--d, 0s);
+  }
+
+  .menu-open .menu-item {
+    animation: menu-in 700ms var(--ease) both;
+    animation-delay: var(--d, 0s);
+  }
+
+  @supports (animation-timeline: view()) {
+    .trace-draw {
+      transform-origin: top;
+      animation: grow-y linear both;
+      animation-timeline: view();
+      animation-range: entry 10% cover 70%;
+    }
+    .scroll-progress {
+      transform-origin: left;
+      animation: grow-x linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fig *,
+  .d-scan,
+  .d-mark,
+  .d-appear,
+  .d-dash,
+  .d-block,
+  .d-type,
+  .d-pulse,
+  .d-blink {
+    animation: none !important;
+  }
+  .d-scan {
+    opacity: 0;
+  }
 }

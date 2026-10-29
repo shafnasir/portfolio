@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent } from "react";
 import { Arrow } from "@/components/ui/Arrow";
 import { LocalTime } from "@/components/ui/LocalTime";
 import { showPlaceholders } from "@/data/site";
@@ -88,6 +88,15 @@ export function Header({ name, resumeHref, timeZone }: Props) {
   const surface: Tone = open ? "dark" : tone;
   const close = () => setOpen(false);
 
+  const goHome = (event: MouseEvent<HTMLAnchorElement>) => {
+    close();
+    if (!isHome) return;
+    // Already on the page. Router navigation stops short because of the header's scroll padding.
+    event.preventDefault();
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    window.requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior }));
+  };
+
   const resume = resumeHref ? (
     <a href={resumeHref} target="_blank" rel="noreferrer" className="group inline-flex items-center gap-2">
       <span className="link-grow">Resume</span>
@@ -105,7 +114,7 @@ export function Header({ name, resumeHref, timeZone }: Props) {
   return (
     <header className={`sticky top-0 z-50 border-b transition-colors duration-500 ${toneClass[surface]}`}>
       <div className="shell flex h-[var(--header-h)] items-center justify-between gap-6">
-        <Link href="/" onClick={close} className="group flex items-center gap-3 text-[15px] font-semibold tracking-[-0.02em]">
+        <Link href="/" onClick={goHome} className="group flex items-center gap-3 text-[15px] font-semibold tracking-[-0.02em]">
           <span aria-hidden="true" className="h-2.5 w-2.5 bg-current transition-transform duration-300 group-hover:rotate-45" />
           {name}
         </Link>
